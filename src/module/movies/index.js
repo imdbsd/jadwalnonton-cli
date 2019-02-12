@@ -14,7 +14,7 @@ const movies = url => {
         let movie = {
           more_info: $(element).find('h2 > a').attr('href'),
           title: $(element).find('h2 > a').text(),
-          rating: $(element).find('.rating').text() === '' ? undefined : $(element).find('.rating').text(),
+          rating: $(element).find('.rating').text() === '' ? 'unrated' : $(element).find('.rating').text(),
           hours,
           genre,
           duration,
@@ -22,7 +22,10 @@ const movies = url => {
         }
         return movie;        
       }).get();
-      resolve(movieLists);
+      resolve({
+        movieLists,
+        schedule: $('.theafilter span.right').text()
+      });
     } catch (e) {
       reject(e);
     }

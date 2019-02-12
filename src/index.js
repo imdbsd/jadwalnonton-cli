@@ -1,27 +1,29 @@
+#!/usr/bin/env node
+
 const program = require('commander');
 const inquirer = require('inquirer');
 const clc = require("cli-color");
-const Table = require('cli-table3');
+const Table = require('cli-table');
+
+const { version, description } = require('./versioning');
 
 const area = require('./module/area');
 const theater = require('./module/theater');
 const movies = require('./module/movies');
 
 program
-  .version('0.0.1')
-  .description('jadwalnonton.com unofficial CLI tool')
-  .option('-a, --area <area>')
-  .option('-t, --theater <theater>')
+  .version(version)
+  .description(description)
+  .option('-d, --daerah <daerah>')  
   .action(async options => {    
-    try {
-        // console.log(options.area);
-      // console.log(options.theater);
-      // console.log(options.movie);
-      let isExit = false;
-      let page = 0;
-      let selectedAnswer = '';
+    try {      
+      let isExit = false;          
       
-      let selectedArea = '';
+      let areaQuestionState = {
+        url: '',
+        page: 0,
+        selectedArea: ''
+      };
 
       let theaterQuestionState = {
         url: '',
@@ -32,68 +34,91 @@ program
         url: '',
         selectedMovie: ''
       }
+
+      //constructor section
+      if(options.daerah) {
+        let findArea = await area(0, options.daerah);
+        if(findArea) {
+          areaQuestionState.selectedArea = findArea.locale;
+          areaQuestionState.url = findArea.url;
+          theaterQuestionState.url = findArea.url;
+        }        
+      }
       
       while(!isExit) {
-        if(selectedArea === '') {
-          let { locales, nextPage, prevPage } = await area(page);
-          let question = locales.map(local => local.locale);
+        if(areaQuestionState.selectedArea === '') {
+          let { locales, nextPage, prevPage } = await area(areaQuestionState.page);
+          let choices = locales.map(local => local.locale);
 
-          if(nextPage !== undefined) question.push('next');
-          if(prevPage !== undefined) question.push('previous');
-          question.push('exit');
-
-          // console.log({question})
+          choices.push(new inquirer.Separator())
+          
+          if(nextPage !== undefined) choices.push('next');
+          if(prevPage !== undefined) choices.push('previous');
+          choices.push('exit');
 
           let answer = await inquirer.prompt([{
-            type: 'rawlist',
+            type: 'list',
             name: 'area',
-            message: clc.red('where is your region'),
-            choices: question
+            message: clc.red('Mau nonton di daerah mana gan?'),
+            pageSize: 15,
+            choices
           }]);
-          // console.log({answer})
-          if(answer.area === 'exit') isExit = true;
-          else if(answer.area === 'next') page++;
-          else if(answer.area === 'previous') page--;
-          else {
-            selectedAnswer = locales.find(({locale}) => locale === answer.area);
-            // console.log(selectedAnswer)   
-            selectedArea = selectedAnswer;
-            theaterQuestionState.url = selectedAnswer.url;
-            // console.log({theaterQuestionState})
+          
+          if(answer.area === 'exit') {
+            console.log('Terima Kasih...');
+            isExit = true;
           }
+          else if(answer.area === 'next') areaQuestionState.page++;
+          else if(answer.area === 'previous') areaQuestionState.page--;
+          else {
+            const { locale, url } = locales.find(({locale}) => locale === answer.area);
+            areaQuestionState.selectedArea = locale;
+            areaQuestionState.url = url;
+            theaterQuestionState.url = url;
+          }          
         }
-        else if(theaterQuestionState.selectedTheater === '') {  
-          console.log({theaterQuestionState})      
+        else if(theaterQuestionState.selectedTheater === '') {            
           let { theaters, nextLink, prevLink } = await theater(theaterQuestionState.url);
           let question = theaters.map(({ theater_name }) => theater_name);
-
+          
+          question.push(new inquirer.Separator())
           if(nextLink !== undefined) question.push('next');
           if(prevLink !== undefined) question.push('previous');
-          question.push('reset my region');
+          question.push('ganti daerah');
           question.push('exit');
 
-          // console.log({question})
           let answer = await inquirer.prompt([{
-            type: 'rawlist',
+            type: 'list',
             name: 'theater',
-            message: 'Which theater you want to go ?',
+            message: `Silahkan pilih bioskopnya gan (daerah: ${areaQuestionState.selectedArea}):`,
+            pageSize: question.length,
             choices: question
           }]);
-          // console.log({answer})
-          if(answer.area === 'exit') isExit = true;
-          else if(answer.area === 'next') theaterQuestionState.url = nextLink;
-          else if(answer.area === 'previous') theaterQuestionState.url = prevLink;
+          
+          if(answer.theater === 'exit') {
+            console.log('Terima Kasih...');
+            isExit = true;
+          }
+          else if(answer.theater === 'next') theaterQuestionState.url = nextLink;
+          else if(answer.theater === 'previous') theaterQuestionState.url = prevLink;
+          else if(answer.theater === 'ganti daerah') {
+            areaQuestionState = {
+              url: '',
+              page: 0,
+              selectedArea: ''
+            };
+          }
           else {
             theaterQuestionState.selectedTheater = theaters.find(({theater_name}) => theater_name === answer.theater);
-            console.log({theaterQuestionState})
+            
             moviesQuestionState.url = theaterQuestionState.selectedTheater.url
           }        
         }
-        else if(moviesQuestionState.selectedMovie === '') {
-          console.log({moviesQuestionState})
-          const movieList = await movies(moviesQuestionState.url);
+        else if(moviesQuestionState.selectedMovie === '') {          
+          const { movieLists, schedule } = await movies(moviesQuestionState.url);          
+                  
           let table = new Table({
-            head: [clc.bgWhite.black('No'), clc.bgWhite.black('Title'), clc.bgWhite.black('Rating'), clc.bgWhite.black('Genre'), clc.bgWhite.black('Duration'), clc.bgWhite.black('Available Time'), clc.bgWhite.black('Price')],
+            head: [clc.red('No'), clc.red('Title'), clc.red('Rating'), clc.red('Genre'), clc.red('Duration'), clc.red('Available Time'), clc.red('Price')],
             chars: { 
               'top': '═' , 
               'top-mid': '╤' , 
@@ -112,28 +137,61 @@ program
               'middle': '│' 
             }       
           });
-          movieList.forEach(({ title, rating, genre, duration, hours, price }, index) => { 
-
-            table.push([index + 1, title, rating, genre, duration, hours.join(', '), price])
-          });                            
-          console.log(table.toString());          
+          
+          if(movieLists.length > 0) {
+            movieLists.forEach(({ title, rating, genre, duration, hours, price }, index) => {
+              if(hours.length === 0) {
+                hours = clc.bgRedBright.black('unavailable');
+              }
+              if(rating === '17+'){
+                rating = clc.bgRedBright.black(rating);
+              }
+              else if(rating === '13+'){
+                rating = clc.bgBlueBright.black(rating);
+              }
+              else if(rating === 'SU') {
+                rating = clc.bgGreen.black(rating);
+              }
+              table.push([index + 1, title, rating, genre, duration, hours, price])
+            });
+          }          
+          
+          console.log(`Jadwal film untuk: ${schedule}`);          
+          console.log(`Area: ${areaQuestionState.selectedArea.toLocaleLowerCase().replace(/ /g, '-')} \nBioskop: ${theaterQuestionState.selectedTheater.theater_name}
+          `)
+          console.log(table.toString());         
           let answer = await inquirer.prompt([{
             type: 'list',
             name: 'after_movie',
-            message: 'What next?',
+            message: 'Selanjutnya apa gan?',
             choices: [
-              'restart selected theater',
-              'restart my region',
-              'quit'
+              'ganti bioskop',
+              'ganti daerah',
+              'exit'
             ]
           }]);
-          console.log({answer})
-          if(answer.after_movie === 'quit') isExit = true;
+          
+          if(answer.after_movie === 'exit') {
+            console.log('Terima Kasih...');
+            isExit = true;
+          }
+          else if(answer.after_movie === 'ganti daerah') {
+            areaQuestionState = {
+              url: '',
+              page: 0,
+              selectedArea: ''
+            };
+            theaterQuestionState.selectedTheater = '';
+          }
+          else if(answer.after_movie === 'ganti bioskop') {
+            theaterQuestionState.selectedTheater = '';
+          }
         }
       }
     }
     catch(e) {
-      console.log(e)
+      console.log("Maaf, ada gangguan :(");
+      // console.log(e)
     }
   })
   .parse(process.argv);
