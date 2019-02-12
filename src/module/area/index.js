@@ -2,7 +2,7 @@ const axios = require("axios");
 const cherio = require("cherio");
 const totalReturnPerpage = 10;
 
-const localeList = (page) => {
+const localeList = (page = 0) => {
   return new Promise(async (resolve, reject) => {
     try{
       const { data:html } = await axios.get('https://jadwalnonton.com/bioskop');  
