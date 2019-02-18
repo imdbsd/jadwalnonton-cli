@@ -1,25 +1,44 @@
 {
   "name": "jadwalnonton-cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "author": {
+    "name": "I Made Budi Surya Darma",
+    "email": "budisuryadarma0407@gmail.com",
+    "url": "https://twitter.com/Budisuryadarma"
+  },
   "description": "Unofficial CLI tool for checking movie schedule from jadwalnonton.com",
   "main": "./src/index.js",
   "preferGlobal": true,
   "bin": "./src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./dist/index.js",
+    "build": "tsc -p .",
+    "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imdbsd/jadwalnonton-cli"
   },
   "keywords": [
     "jadwalnonton.com",
     "CLI"
   ],
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
-    "cherio": "^1.0.0-rc.2",
+    "cheerio": "^1.0.0-rc.2",
     "cli-color": "^1.4.0",
     "cli-table": "^0.3.1",
     "commander": "^2.19.0",
     "inquirer": "^6.2.2"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.10",
+    "@types/cli-color": "^0.3.29",
+    "@types/cli-table": "^0.3.0",
+    "@types/inquirer": "0.0.43",
+    "@types/node": "^11.9.4",
+    "ts-node-dev": "^1.0.0-pre.32",
+    "typescript": "^3.3.3"
   }
 }
