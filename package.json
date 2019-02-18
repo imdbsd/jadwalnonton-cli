@@ -1,14 +1,13 @@
 {
   "name": "jadwalnonton-cli",
   "version": "0.0.1",
-  "author": "Budi Surya Darma",
+  "author": {
+    "name": "I Made Budi Surya Darma",
+    "email": "budisuryadarma0407@gmail.com",
+    "url": "https://twitter.com/Budisuryadarma"
+  },
   "description": "Unofficial CLI tool for checking movie schedule from jadwalnonton.com",
   "main": "./src/index.js",
-  "author": { 
-    "name" : "I Made Budi Surya Darma", 
-    "email" : "budisuryadarma0407@gmail.com", 
-    "url" : "https://twitter.com/Budisuryadarma"
-  },
   "preferGlobal": true,
   "bin": "./src/index.js",
   "scripts": {
@@ -17,8 +16,8 @@
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/imdbsd/jadwalnonton-cli"
+    "type": "git",
+    "url": "https://github.com/imdbsd/jadwalnonton-cli"
   },
   "keywords": [
     "jadwalnonton.com",

@@ -73,7 +73,7 @@ program
                     let answer: Answers = await inquirer.prompt([{
                         type: 'list',
                         name: 'area',
-                        message: clc.red('Mau nonton di daerah mana gan?'),
+                        message: 'Mau nonton di daerah mana gan?',
                         pageSize: 15,
                         choices
                     }]);
@@ -140,28 +140,45 @@ program
                     let table = new Table({
                         head: [clc.red('No'), clc.red('Title'), clc.red('Rating'), clc.red('Genre'), clc.red('Duration'), clc.red('Available Time'), clc.red('Price')],
                         chars: { 
-                        'top': '═' , 
-                        'top-mid': '╤' , 
-                        'top-left': '╔' , 
-                        'top-right': '╗', 
-                        'bottom': '═' , 
-                        'bottom-mid': '╧' , 
-                        'bottom-left': '╚' , 
-                        'bottom-right': '╝', 
-                        'left': '║' , 
-                        'left-mid': '╟' , 
-                        'mid': '─' , 
-                        'mid-mid': '┼', 
-                        'right': '║' , 
-                        'right-mid': '╢' , 
-                        'middle': '│' 
+                            'top': '═' , 
+                            'top-mid': '╤' , 
+                            'top-left': '╔' , 
+                            'top-right': '╗', 
+                            'bottom': '═' , 
+                            'bottom-mid': '╧' , 
+                            'bottom-left': '╚' , 
+                            'bottom-right': '╝', 
+                            'left': '║' , 
+                            'left-mid': '╟' , 
+                            'mid': '─' , 
+                            'mid-mid': '┼', 
+                            'right': '║' , 
+                            'right-mid': '╢' , 
+                            'middle': '│' 
                         }       
                     });
                 
                     if(movieLists.length > 0) {
                         movieLists.forEach(({ title, rating, genre, duration, available_hours, price }, index) => {                
-                            if(available_hours) {
+                            if(!available_hours) {
+                                console.log({available_hours})
                                 available_hours = clc.bgRedBright.black('unavailable');
+                            }
+                            else {
+                                if(typeof available_hours !== 'string'){
+                                    available_hours = available_hours.reduce((temp, hour, index): string => {                                        
+                                        if(index === 1){
+                                            temp = clc.bgGreenBright.black(temp);
+                                        }
+                                        if(index % 2 !== 0){
+                                            temp += ` ${clc.bgGreenBright.black(hour)}\n\n`;
+                                        }
+                                        else{
+                                            temp += `${clc.bgGreenBright.black(hour)}`
+                                        }
+                                        return temp;
+                                    });
+                                }                                
                             }
                             if(rating === '17+'){
                                 rating = clc.bgRedBright.black(rating);
