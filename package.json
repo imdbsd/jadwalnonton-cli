@@ -1,6 +1,6 @@
 {
   "name": "jadwalnonton-cli",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "author": {
     "name": "I Made Budi Surya Darma",
     "email": "budisuryadarma0407@gmail.com",
@@ -9,7 +9,7 @@
   "description": "Unofficial CLI tool for checking movie schedule from jadwalnonton.com",
   "main": "./src/index.js",
   "preferGlobal": true,
-  "bin": "./src/index.js",
+  "bin": "./dist/index.js",
   "scripts": {
     "start": "node ./dist/index.js",
     "build": "tsc -p .",
@@ -30,7 +30,8 @@
     "cli-color": "^1.4.0",
     "cli-table": "^0.3.1",
     "commander": "^2.19.0",
-    "inquirer": "^6.2.2"
+    "inquirer": "^6.2.2",
+    "node-cache": "^4.2.0"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.10",
